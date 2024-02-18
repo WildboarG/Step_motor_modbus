@@ -1,0 +1,7 @@
+../Core/Src/modbus.c:9:6:modbus_send_data	16	static
+../Core/Src/modbus.c:16:6:modbus_service	16	static
+../Core/Src/modbus.c:63:6:modbus_04_function	16	static
+../Core/Src/modbus.c:95:6:modbus_06_function	16	static
+../Core/Src/modbus.c:127:6:modbus_16_function	16	static
+../Core/Src/modbus.c:154:14:CRC16	536	static
+../Core/Src/modbus.c:248:9:Compare_Register	16	static
