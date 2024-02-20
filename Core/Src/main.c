@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -47,50 +46,23 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t counter=0;
-uint8_t mes[20];
-extern uint8_t code_key=0;
+char message[]="hello world";
+	uint8_t res[2];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+//	  HAL_UART_Transmit_IT(&huart1, res, 2);
+//	  HAL_UART_Receive_IT(&huart1, res, 2);
+//}
 
-/*
- * æˆ‘ä»¬é€‰çš„ 18Â°
- 	 360Â°/18Â° = 20/r
-   	 å¾®æ­¥1/4   ï¼?  20*8=80/r
-   å‡é?Ÿæ¯”1:125  ï¼? 80*125 = 10000 è„‰å†²/r
-  	  100000/360Â°=27.77777 è„‰å†²/Â°
- */
-
-// è·å–ç¼–ç å€?
-uint8_t Get_Coder(void){
-	uint8_t codekey=0;
-	codekey =  !(HAL_GPIO_ReadPin(GPIOB,key2_8_Pin))<< 7 |
-			   !(HAL_GPIO_ReadPin(GPIOB,key2_4_Pin))<< 6 |
-			   !(HAL_GPIO_ReadPin(GPIOB,key2_2_Pin))<< 5 |
-			   !(HAL_GPIO_ReadPin(GPIOB,key2_1_Pin))<< 4 |
-			   !(HAL_GPIO_ReadPin(GPIOD,key1_8_Pin))<< 3 |
-			   !(HAL_GPIO_ReadPin(GPIOB,key1_4_Pin))<< 2 |
-			   !(HAL_GPIO_ReadPin(GPIOB,key1_2_Pin))<< 1 |
-			   !(HAL_GPIO_ReadPin(GPIOB,key1_1_Pin));
-	if (codekey){
-		return codekey;
-	}
-}
-// æµ‹è¯•å®šæ—¶å™?
-void Test_tim(void){
-		  counter = __HAL_TIM_GET_COUNTER(&htim2);
-		  sprintf(mes,"count:%d",counter);
-		  HAL_UART_Transmit_IT(&huart1, (uint8_t *)mes, strlen(mes));
-}
 /* USER CODE END 0 */
 
 /**
@@ -100,6 +72,10 @@ void Test_tim(void){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	uint8_t a,d,c,b;
+	uint16_t encoder_value, encoder_va;
+	uint8_t coder;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -108,6 +84,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+// char a,b,c,d;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -119,33 +96,49 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART1_UART_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
+  MX_USART1_UART_Init(); //´®¿Ú³õÊ¼»¯
+  MX_TIM2_Init();  //¶¨Ê±Æ÷³õÊ¼»¯
   /* USER CODE BEGIN 2 */
+  HAL_UART_Receive_IT(&huart1, res, 2);
 
-  HAL_UART_Transmit_IT(&huart1, (uint8_t *)"START", 5);
-  HAL_GPIO_WritePin(GPIOC, ENAB_Pin, 1); // ä¸Šç”µå…³é—­ä½¿èƒ½
+  HAL_UART_Transmit_IT(&huart1, "hh", 2);  // key1é è¿‘ä¸‹è½½ï¿????   key2é è¿‘ï¿????
+  a = (HAL_GPIO_ReadPin(GPIOD, key1_8_Pin));   //PD2          //pb6
+  b = (HAL_GPIO_ReadPin(GPIOB, key1_4_Pin));   //PB3          //pb7
+  c = (HAL_GPIO_ReadPin(GPIOB, key1_2_Pin));   //PB4          //pb8
+  d = (HAL_GPIO_ReadPin(GPIOB, key1_1_Pin));   //PB5          //pb9
+
+//  HAL_UART_Transmit_IT(&huart1, a,1);
+//  HAL_Delay(50);
+//  HAL_UART_Transmit_IT(&huart1, b,1);
+//  HAL_Delay(50);
+//  HAL_UART_Transmit_IT(&huart1, c,1);
+//  HAL_Delay(50);
+//  HAL_UART_Transmit_IT(&huart1, d,1);
+//  HAL_Delay(50);
+//  HAL_UART_Transmit_IT(&huart1, 'E',1);
   HAL_Delay(500);
-  code_key = Get_Coder();  //è®¡ç®—ç¼–ç å™¨çš„å€¼å¯¼å‡?
+  // 6 7 8 9  ~  8 4 2 1
+  encoder_value = ((HAL_GPIO_ReadPin(GPIOB, key2_8_Pin)) << 3) |
+          ((HAL_GPIO_ReadPin(GPIOB, key2_4_Pin)) << 2) |
+          ((HAL_GPIO_ReadPin(GPIOB, key2_2_Pin)) << 1) |
+          (HAL_GPIO_ReadPin(GPIOB, key2_1_Pin));
+//  HAL_UART_Transmit_IT(&huart1, encoder_value,1);
+  encoder_va = ((HAL_GPIO_ReadPin(GPIOD, key1_8_Pin)) << 3) |
+          ((HAL_GPIO_ReadPin(GPIOB, key1_4_Pin)) << 2) |
+          ((HAL_GPIO_ReadPin(GPIOB, key1_2_Pin)) << 1) |
+          (HAL_GPIO_ReadPin(GPIOB, key1_1_Pin));
+//  HAL_UART_Transmit_IT(&huart1, !encoder_va,1);
+//  HAL_Delay(1000);
   /* USER CODE END 2 */
 
-  /* Init scheduler */
-  osKernelInitialize();
-
-  /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
-
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-
+//	  HAL_UART_Transmit_IT(&huart1, encoder_va,1);
+//	  HAL_Delay(1000);
+	  modbus_service();  // modbus·şÎñ
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -168,11 +161,12 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 72;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
